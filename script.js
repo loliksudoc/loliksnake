@@ -14,6 +14,7 @@ let highScore = localStorage.getItem('highScore') || 0;
 let currentScoreElem = document.getElementById('current-score');
 let highScoreElem = document.getElementById('high-score');
 
+// Инициализация игры
 function initializeGame() {
     snake = [
         { x: Math.floor(canvas.width / 2 / GRID_SIZE) * GRID_SIZE, y: Math.floor(canvas.height / 2 / GRID_SIZE) * GRID_SIZE },
@@ -35,6 +36,7 @@ function initializeGame() {
 
 initializeGame();
 
+// Управление с клавиатуры
 document.addEventListener('keydown', function(event) {
     switch (event.key) {
         case 'ArrowUp':
@@ -64,6 +66,41 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
+// Управление для мобильных устройств (свайпы)
+let startTouch = null;
+
+canvas.addEventListener('touchstart', function(event) {
+    startTouch = { x: event.touches[0].pageX, y: event.touches[0].pageY };
+});
+
+canvas.addEventListener('touchmove', function(event) {
+    if (!startTouch) return;
+
+    let endTouch = { x: event.touches[0].pageX, y: event.touches[0].pageY };
+    let deltaX = endTouch.x - startTouch.x;
+    let deltaY = endTouch.y - startTouch.y;
+
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (deltaX > 0 && dx === 0) {
+            dx = GRID_SIZE;
+            dy = 0;
+        } else if (deltaX < 0 && dx === 0) {
+            dx = -GRID_SIZE;
+            dy = 0;
+        }
+    } else {
+        if (deltaY > 0 && dy === 0) {
+            dx = 0;
+            dy = GRID_SIZE;
+        } else if (deltaY < 0 && dy === 0) {
+            dx = 0;
+            dy = -GRID_SIZE;
+        }
+    }
+    startTouch = null; // Обнуляем начальную точку после свайпа
+});
+
+// Генерация позиции еды
 function generateFoodPosition() {
     while (true) {
         let newFoodPosition = {
@@ -123,7 +160,7 @@ function update() {
         };
 
         if (snake.length === (canvas.width / GRID_SIZE) * (canvas.height / GRID_SIZE)) {
-            gameWin(); // fixed the missing function invocation
+            gameWin();
             return;
         }
     } else {
